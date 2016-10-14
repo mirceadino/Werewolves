@@ -1,13 +1,17 @@
-game.o: game.c
-	gcc -c game.c
+CC=gcc
+CFLAGS=
 
-server.o: server.c
-	gcc -c server.c
+DEPS=game.h
 
-OBJ=game.o server.o
+ODIR=obj
+_OBJ=game.o server.o
+OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
 server: $(OBJ)
-	gcc -o server $(OBJ)
+	$(CC) -o $@ $(OBJ)
+
+$(ODIR)/%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $(CFLAGS) $<
 
 clean:
-	rm *.o server
+	rm $(ODIR)/*.o server

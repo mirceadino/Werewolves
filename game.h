@@ -17,17 +17,20 @@ typedef struct Role {
   char* title;
   char* description;
   int number;
-} Role;
+} Role, *PRole;
 
 // Creates a role with no characteristics.
-Role* new_role();
+PRole new_role();
 
 // Initializes a role with the corresponding characteristics.
-void role_init(Role* role, RoleType type, char* title, char* description,
+void role_init(PRole role,
+               RoleType type,
+               char* title,
+               char* description,
                int number);
 
 // Frees the memory allocated by the role.
-void role_destroy(Role* role);
+void role_destroy(PRole role);
 
 // ===================================================
 // ===================== PLAYERS =====================
@@ -44,23 +47,25 @@ typedef struct Player {
   RoleType role;
   char* name;
   State state;
-} Player;
+} Player, *PPlayer;
 
 // Creates a player with no characteristics.
-Player* new_player();
+PPlayer new_player();
 
 // Gives a name to the player.
-void player_init(Player* player, char* name);
+void player_init(PPlayer player,
+                 char* name);
 
 // Assigns a role to the player and makes him alive.
-void player_assign(Player* player, RoleType role);
+void player_assign(PPlayer player,
+                   RoleType role);
 
 // Kills the player. Returns 1 if the player was successfully killed
 // and 0 if the player was already dead.
-int player_kill(Player* player);
+int player_kill(PPlayer player);
 
 // Frees the memory allocated by the player.
-void player_destroy(Player* player);
+void player_destroy(PPlayer player);
 
 // ================================================
 // ===================== GAME =====================
@@ -71,26 +76,28 @@ void player_destroy(Player* player);
 typedef struct Room {
   int num_players;
   int cap_players;
-  Player** players;
+  PPlayer* players;
   int num_roles;
-  Role** roles;
+  PRole* roles;
   char* name;
-} Room;
+} Room, *PRoom;
 
 // Creates a room with no characteristics.
-Room* new_room();
+PRoom new_room();
 
 // Gives a name to the room and initializes the roles and the number of
 // available positions for each role.
-void room_init(Room* room, char* name);
+void room_init(PRoom room,
+               char* name);
 
 // Adds a player to the room. The ownership of the player will belong to
 // the room.
-void room_add_player(Room* room, Player* player);
+void room_add_player(PRoom room,
+                     PPlayer player);
 
 // Sets up the room for a new game. Each player is assigned a random
 // role.
-void room_setup(Room* room);
+void room_setup(PRoom room);
 
 // Frees the memory allocated by the room.
-void room_destroy(Room* room);
+void room_destroy(PRoom room);
