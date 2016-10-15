@@ -1,17 +1,26 @@
 CC=gcc
 CFLAGS=
 
-DEPS=game.h
+SRC=src
+BIN=bin
+OBJ=obj
 
-ODIR=obj
-_OBJ=game.o server.o
-OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
+all: server client
 
-server: $(OBJ)
-	$(CC) -o $@ $(OBJ)
+_server_OBJ=game.o utils.o
+server_OBJ=$(patsubst %,$(OBJ)/%,$(_server_OBJ))
 
-$(ODIR)/%.o: %.c $(DEPS)
+server: $(server_OBJ)
+	$(CC) -o $(BIN)/$@ $(SRC)/$@.c $(server_OBJ)
+
+_client_OBJ=game.o utils.o
+client_OBJ=$(patsubst %,$(OBJ)/%,$(_client_OBJ))
+
+client: $(client_OBJ)
+	$(CC) -o $(BIN)/$@ $(SRC)/$@.c $(client_OBJ)
+
+$(OBJ)/%.o: $(SRC)/%.c $(SRC)/%.h
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 clean:
-	rm $(ODIR)/*.o server
+	rm $(OBJ)/* $(BIN)/*
