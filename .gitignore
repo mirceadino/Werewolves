@@ -1,4 +1,4 @@
-#kjk Object files
+# Object files
 *.o
 *.ko
 *.obj
@@ -32,8 +32,12 @@
 *.dSYM/
 *.su
 
+# Swap
+*.swp
+
 # Executables
 bin/*
 
 # .gitignore
 .gitignore
+
