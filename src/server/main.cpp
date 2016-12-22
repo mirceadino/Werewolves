@@ -41,15 +41,11 @@ int main(int argc, char** argv) {
     tcp::acceptor acceptor(service, end_point);
     acceptor.accept(socket);
 
-    cout << receive(socket) << endl;
-    cout << receive(socket) << endl;
-
-    send(socket, "ana has apples");
-    send(socket, "bob has apples");
-    send(socket, "carl has apples");
-    send(socket, "diana has apples");
-
-    cout << receive(socket) << endl;
+    while (true) {
+      string message = receive(socket);
+      cout << message << endl;
+      send(socket, message);
+    }
 
   } catch (boost_error err) {
     cerr << err.what() << endl;

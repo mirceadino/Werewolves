@@ -1,3 +1,6 @@
+#ifndef CLIENT_CONTROLLER_H
+#define CLIENT_CONTROLLER_H
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -40,3 +43,5 @@ class Controller {
 };
 
 }
+
+#endif

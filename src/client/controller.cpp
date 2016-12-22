@@ -29,7 +29,6 @@ Controller::Controller() {
 void Controller::OpenConnection(const basic_string<char>& host, int port) {
   tcp::endpoint end_point(address::from_string(host), port);
   socket_->connect(end_point);
-  std::cerr << "Connection opened.\n";
 }
 
 void Controller::SendMessage(const basic_string<char>& message) {
@@ -49,7 +48,6 @@ vector<string> Controller::RetrieveNewMessages() {
 
 void Controller::CloseConnection() {
   socket_->close();
-  std::cerr << "Connection closed.\n";
 }
 
 // ----------------------------------------------------------------------------

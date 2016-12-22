@@ -11,10 +11,19 @@ all: server client
 # client
 SRC_CLIENT=$(SRC)/client
 
-DEPS_TMP_client=client_main.o client_controller.o
+DEPS_TMP_client=client_main.o client_controller.o client_textview.o
 DEPS_client=$(patsubst %,$(OBJ)/%,$(DEPS_TMP_client))
 client: $(DEPS_TMP_client)
 	$(CC) $(CFLAGS) -o $(BIN)/client $(DEPS_client) -l boost_system
+
+CPP_TMP_client_main=main.cpp
+H_TMP_client_main=
+DEPS_TMP_client_main=$(CPP_TMP_client_main) $(H_TMP_client_main)
+CPP_client_main=$(patsubst %,$(SRC_CLIENT)/%,$(CPP_TMP_client_main))
+H_client_main=$(patsubst %,$(SRC_CLIENT)/%,$(H_TMP_client_main))
+DEPS_client_main=$(patsubst %,$(SRC_CLIENT)/%,$(DEPS_TMP_client_main))
+client_main.o: $(DEPS_client_main)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/$@ $(CPP_client_main)
 
 CPP_TMP_client_controller=controller.cpp
 H_TMP_client_controller=controller.h
@@ -25,14 +34,14 @@ DEPS_client_controller=$(patsubst %,$(SRC_CLIENT)/%,$(DEPS_TMP_client_controller
 client_controller.o: $(DEPS_client_controller)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/$@ $(CPP_client_controller)
 
-CPP_TMP_client_main=main.cpp
-H_TMP_client_main=
-DEPS_TMP_client_main=$(CPP_TMP_client_main) $(H_TMP_client_main)
-CPP_client_main=$(patsubst %,$(SRC_CLIENT)/%,$(CPP_TMP_client_main))
-H_client_main=$(patsubst %,$(SRC_CLIENT)/%,$(H_TMP_client_main))
-DEPS_client_main=$(patsubst %,$(SRC_CLIENT)/%,$(DEPS_TMP_client_main))
-client_main.o: $(DEPS_client_main)
-	$(CC) $(CFLAGS) -c -o $(OBJ)/$@ $(CPP_client_main)
+CPP_TMP_client_textview=textview.cpp
+H_TMP_client_textview=textview.h
+DEPS_TMP_client_textview=$(CPP_TMP_client_textview) $(H_TMP_client_textview)
+CPP_client_textview=$(patsubst %,$(SRC_CLIENT)/%,$(CPP_TMP_client_textview))
+H_client_textview=$(patsubst %,$(SRC_CLIENT)/%,$(H_TMP_client_textview))
+DEPS_client_textview=$(patsubst %,$(SRC_CLIENT)/%,$(DEPS_TMP_client_textview))
+client_textview.o: $(DEPS_client_textview)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/$@ $(CPP_client_textview)
 
 # server
 SRC_SERVER=$(SRC)/server
