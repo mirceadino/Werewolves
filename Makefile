@@ -14,7 +14,7 @@ SRC_CLIENT=$(SRC)/client
 DEPS_TMP_client=client_main.o client_controller.o client_textview.o
 DEPS_client=$(patsubst %,$(OBJ)/%,$(DEPS_TMP_client))
 client: $(DEPS_TMP_client)
-	$(CC) $(CFLAGS) -o $(BIN)/client $(DEPS_client) -l boost_system
+	$(CC) $(CFLAGS) -o $(BIN)/$@ $(DEPS_client) -l boost_system
 
 CPP_TMP_client_main=main.cpp
 H_TMP_client_main=
@@ -49,7 +49,7 @@ SRC_SERVER=$(SRC)/server
 DEPS_TMP_server=server_main.o
 DEPS_server=$(patsubst %,$(OBJ)/%,$(DEPS_TMP_server))
 server: $(DEPS_TMP_server)
-	$(CC) $(CFLAGS) -o $(BIN)/server $(DEPS_server) -l boost_system
+	$(CC) $(CFLAGS) -o $(BIN)/$@ $(DEPS_server) -l boost_system
 
 CPP_TMP_server_main=main.cpp
 H_TMP_server_main=

@@ -24,9 +24,15 @@ TextView::TextView(Controller* controller):
 
 void TextView::Init(const std::basic_string<char>& host, int port) {
   try {
-    AskUsername();
     controller_->OpenConnection(host, port);
     cout << "Connection opened." << endl;
+
+    string confirmation;
+    do {
+      AskUsername();
+      controller_->SendMessage(username_);
+      confirmation = controller_->ReceiveMessage();
+    } while (GetConfirmationCode(confirmation) != CODE_OK);
 
   } catch (boost_error err) {
     cout << "Unable to connect." << endl;
@@ -77,6 +83,15 @@ void TextView::AskUsername() {
 
   getline(cin, username_);
   boost::trim(username_);
+}
+
+TextView::ConfirmationCode TextView::GetConfirmationCode(
+  const std::basic_string<char>& confirmation) {
+  if (confirmation == "CODE_OK") {
+    return CODE_OK;
+  }
+
+  return CODE_INVALID;
 }
 
 void TextView::DisplayMainMenu() {

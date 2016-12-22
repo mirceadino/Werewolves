@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <boost/asio.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace client {
 
@@ -38,6 +39,16 @@ void Controller::SendMessage(const basic_string<char>& message) {
   socket_->write_some(boost::asio::buffer(buffer, kMaxDim));
 }
 
+bool Controller::HasMessage() {
+  return socket_->available();
+}
+
+string Controller::ReceiveMessage() {
+  char buffer[kMaxDim];
+  socket_->read_some(boost::asio::buffer(buffer, kMaxDim));
+  return Trim(string(buffer, kMaxDim));
+}
+
 vector<string> Controller::RetrieveNewMessages() {
   vector<string> messages;
   while (HasMessage()) {
@@ -54,14 +65,13 @@ void Controller::CloseConnection() {
 // ----- PRIVATE --------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-bool Controller::HasMessage() {
-  return socket_->available();
-}
-
-string Controller::ReceiveMessage() {
-  char buffer[kMaxDim];
-  socket_->read_some(boost::asio::buffer(buffer, kMaxDim));
-  return string(buffer, kMaxDim);
+string Controller::Trim(string message) {
+  boost::trim(message);
+  while (!message.empty() && message.back() == 0) {
+    message.pop_back();
+  }
+  boost::trim(message);
+  return message;
 }
 
 }

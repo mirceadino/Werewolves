@@ -25,6 +25,10 @@ void send(tcp::socket& socket, const basic_string<char>& message) {
   socket.write_some(boost::asio::buffer(buffer, kMaxDim));
 }
 
+bool UsernameIsUnique(const string& username) {
+  return true | !username.empty();
+}
+
 int main(int argc, char** argv) {
   if (argc < 2) {
     cerr << "usage: " << argv[0] << " <port>" << endl;
@@ -40,6 +44,12 @@ int main(int argc, char** argv) {
 
     tcp::acceptor acceptor(service, end_point);
     acceptor.accept(socket);
+
+    string username;
+    do {
+      username = receive(socket);
+      send(socket, "CODE_OK");
+    } while (!UsernameIsUnique(username));
 
     while (true) {
       string message = receive(socket);

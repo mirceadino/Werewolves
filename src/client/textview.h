@@ -16,7 +16,15 @@ class TextView {
     void RunMain();
 
   private:
+    enum ConfirmationCode {
+      CODE_OK,
+      CODE_INVALID
+    };
+
     void AskUsername();
+
+    ConfirmationCode GetConfirmationCode(const std::basic_string<char>&
+                                         confirmation);
 
     void DisplayMainMenu();
 
