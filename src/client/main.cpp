@@ -1,3 +1,4 @@
+// This is a running scenario (for the moment).
 #include <bits/stdc++.h>
 
 #include "controller.h"
@@ -21,6 +22,19 @@ int main(int argc, char** argv) {
     client::Controller ctrl;
 
     ctrl.OpenConnection(host, port);
+
+    ctrl.SendMessage("hello");
+    ctrl.SendMessage("this is a message");
+
+    sleep(1);
+
+    vector<string> messages = ctrl.RetrieveNewMessages();
+    for (string message : messages) {
+      cout << message << endl;
+    }
+
+    ctrl.SendMessage("exit");
+
     ctrl.CloseConnection();
 
   } catch (boost_error err) {

@@ -1,5 +1,7 @@
 #include "controller.h"
 
+#include <cstring>
+
 #include <iostream>
 #include <memory>
 
@@ -11,11 +13,14 @@ namespace client {
 // ----- PUBLIC ---------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
+typedef boost::system::system_error boost_error;
 using std::basic_string;
 using std::string;
 using std::vector;
 using namespace boost::asio;
 using namespace boost::asio::ip;
+
+static const int kMaxDim = 256;
 
 Controller::Controller() {
   socket_ = std::make_unique<tcp::socket>(io_service_);
@@ -23,30 +28,42 @@ Controller::Controller() {
 
 void Controller::OpenConnection(const basic_string<char>& host, int port) {
   tcp::endpoint end_point(address::from_string(host), port);
-
   socket_->connect(end_point);
-
   std::cerr << "Connection opened.\n";
 }
 
-// TODO(mirceadino): Implement this.
-int Controller::SendMessage(const basic_string<char>& message) {
-  return -1 + 0 * message.size();
+void Controller::SendMessage(const basic_string<char>& message) {
+  char buffer[kMaxDim];
+  memset(buffer, 0, sizeof(buffer));
+  strcpy(buffer, message.c_str());
+  socket_->write_some(boost::asio::buffer(buffer, kMaxDim));
 }
 
-// TODO(mirceadino): Implement this.
 vector<string> Controller::RetrieveNewMessages() {
-  return vector<string>();
+  vector<string> messages;
+  while (HasMessage()) {
+    messages.push_back(ReceiveMessage());
+  }
+  return messages;
 }
 
 void Controller::CloseConnection() {
   socket_->close();
-
   std::cerr << "Connection closed.\n";
 }
 
 // ----------------------------------------------------------------------------
 // ----- PRIVATE --------------------------------------------------------------
 // ----------------------------------------------------------------------------
+
+bool Controller::HasMessage() {
+  return socket_->available();
+}
+
+string Controller::ReceiveMessage() {
+  char buffer[kMaxDim];
+  socket_->read_some(boost::asio::buffer(buffer, kMaxDim));
+  return string(buffer, kMaxDim);
+}
 
 }
