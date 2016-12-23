@@ -1,4 +1,3 @@
-// This is a running scenario (for the moment).
 #include <bits/stdc++.h>
 
 #include <boost/asio.hpp>
@@ -13,12 +12,6 @@ using namespace boost::asio;
 using namespace boost::asio::ip;
 using namespace server;
 
-static const int kMaxDim = 256;
-
-bool UsernameIsValid(const string& username) {
-  return true | !username.empty();
-}
-
 int main(int argc, char** argv) {
   if (argc < 2) {
     cerr << "usage: " << argv[0] << " <port>" << endl;
@@ -27,21 +20,35 @@ int main(int argc, char** argv) {
 
   const int port = atoi(argv[1]);
 
-  for (;;) {
+  while (true) {
+    // Continuously accept clients (one client at the time).
+
     try {
+      // Try accepting a client.
       Controller controller;
       controller.AcceptConnection(port);
       controller.AskUsername();
 
-      while (true) {
-        string message = controller.ReceiveMessage();
-        cout << message << endl;
-        controller.SendMessage(message);
+      cout << controller.username() << " connected." << endl;
+
+      try {
+        // Continuously receives messages from the client and send them back.
+        while (true) {
+          string message = controller.ReceiveMessage();
+          cout << message << endl;
+          controller.SendMessage(message);
+        }
+
+      } catch (boost_error err) {
+        // If there was a failure during sending or receiving messages, close
+        // the connection.
+        controller.CloseConnection();
+        cout << controller.username() << " disconnected." << endl;
       }
 
-      controller.CloseConnection();
-
     } catch (boost_error err) {
+      // If client could not be accepted, there was a failure during asking for
+      // username, or a failure at closing the connection, display the error.
       cerr << err.what() << endl;
     }
   }

@@ -17,9 +17,13 @@ class Controller {
     // Throws boost::system::system_error in case of failure.
     void AcceptConnection(int port);
 
+    // Asks the client for an username. Sends to the client a
+    // CODE_OK if the username is valid. Otherwise, it sends
+    // CODE_INVALID and reasks for an username.
+    // Throws boost::system::system_error in case of failure.
     void AskUsername();
 
-    // Sends a message to the server.
+    // Sends a message to the connected client.
     // Throws boost::system::system_error in case of failure.
     void SendMessage(const std::basic_string<char>& message);
 
@@ -27,7 +31,7 @@ class Controller {
     // Throws boost::system::system_error in case of failure.
     bool HasMessage();
 
-    // Receives a message from the server.
+    // Receives a message from the connected client.
     // Throws boost::system::system_error in case of failure.
     std::string ReceiveMessage();
 
@@ -35,8 +39,18 @@ class Controller {
     // Throws boost::system::system_error in case of failure.
     void CloseConnection();
 
+    const std::string& username() const {
+      return username_;
+    }
+
+    std::string& mutable_username() {
+      return username_;
+    }
+
   private:
     std::string Trim(std::string message);
+
+    bool UsernameIsValid(const std::string& username);
 
     boost::asio::io_service io_service_;
     std::unique_ptr<boost::asio::ip::tcp::socket> socket_;

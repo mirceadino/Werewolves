@@ -34,9 +34,16 @@ void Controller::AcceptConnection(int port) {
 }
 
 void Controller::AskUsername() {
-  do {
+  while (true) {
     username_ = ReceiveMessage();
-  } while (false);
+
+    if (UsernameIsValid(username_)) {
+      break;
+    }
+
+    SendMessage("CODE_INVALID");
+  }
+
   SendMessage("CODE_OK");
 }
 
@@ -72,6 +79,10 @@ string Controller::Trim(string message) {
   }
   boost::trim(message);
   return message;
+}
+
+bool Controller::UsernameIsValid(const string& username) {
+  return username.size() > 3;
 }
 
 }
