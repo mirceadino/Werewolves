@@ -9,9 +9,9 @@
 
 namespace server {
 
-class Controller {
+class ClientHandler {
   public:
-    Controller();
+    ClientHandler();
 
     // Accept a connection on the given port.
     // Throws boost::system::system_error in case of failure.

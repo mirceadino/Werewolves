@@ -1,4 +1,4 @@
-#include "controller.h"
+#include "client_handler.h"
 
 #include <cstring>
 
@@ -23,17 +23,17 @@ using namespace boost::asio::ip;
 
 static const int kMaxDim = 256;
 
-Controller::Controller() {
+ClientHandler::ClientHandler() {
   socket_ = std::make_unique<tcp::socket>(io_service_);
 }
 
-void Controller::AcceptConnection(int port) {
+void ClientHandler::AcceptConnection(int port) {
   tcp::endpoint end_point(tcp::v4(), port);
   tcp::acceptor acceptor(io_service_, end_point);
   acceptor.accept(*socket_);
 }
 
-void Controller::AskUsername() {
+void ClientHandler::AskUsername() {
   while (true) {
     username_ = ReceiveMessage();
 
@@ -47,24 +47,24 @@ void Controller::AskUsername() {
   SendMessage("CODE_OK");
 }
 
-void Controller::SendMessage(const basic_string<char>& message) {
+void ClientHandler::SendMessage(const basic_string<char>& message) {
   char buffer[kMaxDim];
   memset(buffer, 0, sizeof(buffer));
   strcpy(buffer, message.c_str());
   socket_->write_some(boost::asio::buffer(buffer, kMaxDim));
 }
 
-bool Controller::HasMessage() {
+bool ClientHandler::HasMessage() {
   return socket_->available();
 }
 
-string Controller::ReceiveMessage() {
+string ClientHandler::ReceiveMessage() {
   char buffer[kMaxDim];
   socket_->read_some(boost::asio::buffer(buffer, kMaxDim));
   return Trim(string(buffer, kMaxDim));
 }
 
-void Controller::CloseConnection() {
+void ClientHandler::CloseConnection() {
   socket_->close();
 }
 
@@ -72,7 +72,7 @@ void Controller::CloseConnection() {
 // ----- PRIVATE --------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-string Controller::Trim(string message) {
+string ClientHandler::Trim(string message) {
   boost::trim(message);
   while (!message.empty() && message.back() == 0) {
     message.pop_back();
@@ -81,7 +81,7 @@ string Controller::Trim(string message) {
   return message;
 }
 
-bool Controller::UsernameIsValid(const string& username) {
+bool ClientHandler::UsernameIsValid(const string& username) {
   return username.size() > 3;
 }
 

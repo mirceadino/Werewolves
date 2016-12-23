@@ -3,7 +3,7 @@
 #include <boost/thread.hpp>
 #include <boost/system/system_error.hpp>
 
-#include "controller.h"
+#include "client_handler.h"
 
 using namespace std;
 
@@ -13,7 +13,7 @@ using namespace std;
 using boost::thread_group;
 using boost::bind;
 
-unordered_map<Controller*, queue<string>> message_queues;
+unordered_map<ClientHandler*, queue<string>> message_queues;
 boost::mutex mtx;
 
 void broadcast(const basic_string<char>& message) {
@@ -24,10 +24,10 @@ void broadcast(const basic_string<char>& message) {
   mtx.unlock();
 }
 
-void receive_messages(Controller* controller) {
+void receive_messages(ClientHandler* client_handler) {
   try {
     while (true) {
-      string message = controller->ReceiveMessage();
+      string message = client_handler->ReceiveMessage();
       cout << message << endl;
       broadcast(message);
     }
@@ -37,20 +37,20 @@ void receive_messages(Controller* controller) {
   }
 }
 
-void send_messages(Controller* controller) {
+void send_messages(ClientHandler* client_handler) {
   try {
     while (true) {
       mtx.lock();
 
-      if (!message_queues.count(controller)) {
+      if (!message_queues.count(client_handler)) {
         mtx.unlock();
         return;
       }
 
-      if (!message_queues[controller].empty()) {
-        string message = message_queues[controller].front();
-        message_queues[controller].pop();
-        controller->SendMessage(message);
+      if (!message_queues[client_handler].empty()) {
+        string message = message_queues[client_handler].front();
+        message_queues[client_handler].pop();
+        client_handler->SendMessage(message);
       }
 
       mtx.unlock();
@@ -60,20 +60,20 @@ void send_messages(Controller* controller) {
   }
 }
 
-void serve_client(Controller* controller) {
-  controller->AskUsername();
-  cout << controller->username() << " connected." << endl;
-  broadcast(controller->username() + " connected.");
+void serve_client(ClientHandler* client_handler) {
+  client_handler->AskUsername();
+  cout << client_handler->username() << " connected." << endl;
+  broadcast(client_handler->username() + " connected.");
 
   boost::thread receiver;
   boost::thread sender;
   try {
     mtx.lock();
-    message_queues[controller] = queue<string>();
+    message_queues[client_handler] = queue<string>();
     mtx.unlock();
 
-    receiver = boost::thread(bind(receive_messages, controller));
-    sender = boost::thread(bind(send_messages, controller));
+    receiver = boost::thread(bind(receive_messages, client_handler));
+    sender = boost::thread(bind(send_messages, client_handler));
 
     receiver.join();
 
@@ -82,17 +82,17 @@ void serve_client(Controller* controller) {
   }
 
   mtx.lock();
-  message_queues.erase(controller);
+  message_queues.erase(client_handler);
   mtx.unlock();
 
   receiver.interrupt();
   sender.interrupt();
 
-  controller->CloseConnection();
-  cout << controller->username() << " disconnected." << endl;
-  broadcast(controller->username() + " disconnected.");
+  client_handler->CloseConnection();
+  cout << client_handler->username() << " disconnected." << endl;
+  broadcast(client_handler->username() + " disconnected.");
 
-  delete controller;
+  delete client_handler;
 }
 
 int main(int argc, char** argv) {
@@ -107,20 +107,20 @@ int main(int argc, char** argv) {
 
   // Continuously accept clients (one client at the time).
   while (true) {
-    Controller* controller;
+    ClientHandler* client_handler;
     try {
       // Try accepting a client.
-      controller = new Controller();
-      controller->AcceptConnection(port);
+      client_handler = new ClientHandler();
+      client_handler->AcceptConnection(port);
 
       // Serve client once it's accepted.
-      client_servers.create_thread(bind(serve_client, controller));
+      client_servers.create_thread(bind(serve_client, client_handler));
 
     } catch (boost_error err) {
       // If the client could not be accepted or if there was a failure while
       // serving him, display the error.
       cerr << err.what() << endl;
-      delete controller;
+      delete client_handler;
     }
   }
 
