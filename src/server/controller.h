@@ -17,9 +17,9 @@ class Controller {
     // Throws boost::system::system_error in case of failure.
     void AcceptConnection(int port);
 
-    // Asks the client for an username. Sends to the client a
-    // CODE_OK if the username is valid. Otherwise, it sends
-    // CODE_INVALID and reasks for an username.
+    // Asks the client for an username. Sends to the client a CODE_OK if the
+    // username is valid. Otherwise, it sends CODE_INVALID and reasks for an
+    // username.
     // Throws boost::system::system_error in case of failure.
     void AskUsername();
 

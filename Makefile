@@ -49,7 +49,7 @@ SRC_SERVER=$(SRC)/server
 DEPS_TMP_server=server_main.o server_controller.o
 DEPS_server=$(patsubst %,$(OBJ)/%,$(DEPS_TMP_server))
 server: $(DEPS_TMP_server)
-	$(CC) $(CFLAGS) -o $(BIN)/$@ $(DEPS_server) -l boost_system
+	$(CC) $(CFLAGS) -o $(BIN)/$@ $(DEPS_server) -lboost_system -lboost_thread-mt
 
 CPP_TMP_server_main=main.cpp
 H_TMP_server_main=
