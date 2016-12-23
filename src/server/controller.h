@@ -13,9 +13,11 @@ class Controller {
   public:
     Controller();
 
-    // Opens connection to the given host and on the given port.
+    // Accept a connection on the given port.
     // Throws boost::system::system_error in case of failure.
-    void OpenConnection(const std::basic_string<char>& host, int port);
+    void AcceptConnection(int port);
+
+    void AskUsername();
 
     // Sends a message to the server.
     // Throws boost::system::system_error in case of failure.
@@ -29,10 +31,6 @@ class Controller {
     // Throws boost::system::system_error in case of failure.
     std::string ReceiveMessage();
 
-    // Retrieves the new messages that the server received.
-    // Throws boost::system::system_error in case of failure.
-    std::vector<std::string> RetrieveNewMessages();
-
     // Closes the connection.
     // Throws boost::system::system_error in case of failure.
     void CloseConnection();
@@ -42,6 +40,7 @@ class Controller {
 
     boost::asio::io_service io_service_;
     std::unique_ptr<boost::asio::ip::tcp::socket> socket_;
+    std::string username_;
 };
 
 }

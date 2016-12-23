@@ -27,9 +27,17 @@ Controller::Controller() {
   socket_ = std::make_unique<tcp::socket>(io_service_);
 }
 
-void Controller::OpenConnection(const basic_string<char>& host, int port) {
-  tcp::endpoint end_point(address::from_string(host), port);
-  socket_->connect(end_point);
+void Controller::AcceptConnection(int port) {
+  tcp::endpoint end_point(tcp::v4(), port);
+  tcp::acceptor acceptor(io_service_, end_point);
+  acceptor.accept(*socket_);
+}
+
+void Controller::AskUsername() {
+  do {
+    username_ = ReceiveMessage();
+  } while (false);
+  SendMessage("CODE_OK");
 }
 
 void Controller::SendMessage(const basic_string<char>& message) {
@@ -47,14 +55,6 @@ string Controller::ReceiveMessage() {
   char buffer[kMaxDim];
   socket_->read_some(boost::asio::buffer(buffer, kMaxDim));
   return Trim(string(buffer, kMaxDim));
-}
-
-vector<string> Controller::RetrieveNewMessages() {
-  vector<string> messages;
-  while (HasMessage()) {
-    messages.push_back(ReceiveMessage());
-  }
-  return messages;
 }
 
 void Controller::CloseConnection() {

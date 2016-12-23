@@ -37,6 +37,7 @@ void TextView::Init(const std::basic_string<char>& host, int port) {
   } catch (boost_error err) {
     cout << "Unable to connect." << endl;
     cerr << err.what() << endl;
+    RunExit();
   }
 }
 

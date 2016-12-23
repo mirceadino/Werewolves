@@ -4,28 +4,18 @@
 #include <boost/asio.hpp>
 #include <boost/system/system_error.hpp>
 
+#include "controller.h"
+
 using namespace std;
 
 typedef boost::system::system_error boost_error;
 using namespace boost::asio;
 using namespace boost::asio::ip;
+using namespace server;
 
 static const int kMaxDim = 256;
 
-string receive(tcp::socket& socket) {
-  char buffer[kMaxDim];
-  socket.read_some(boost::asio::buffer(buffer, kMaxDim));
-  return string(buffer, kMaxDim);
-}
-
-void send(tcp::socket& socket, const basic_string<char>& message) {
-  char buffer[kMaxDim];
-  memset(buffer, 0, sizeof(buffer));
-  strcpy(buffer, message.c_str());
-  socket.write_some(boost::asio::buffer(buffer, kMaxDim));
-}
-
-bool UsernameIsUnique(const string& username) {
+bool UsernameIsValid(const string& username) {
   return true | !username.empty();
 }
 
@@ -37,28 +27,23 @@ int main(int argc, char** argv) {
 
   const int port = atoi(argv[1]);
 
-  try {
-    io_service service;
-    tcp::endpoint end_point(tcp::v4(), port);
-    tcp::socket socket(service);
+  for (;;) {
+    try {
+      Controller controller;
+      controller.AcceptConnection(port);
+      controller.AskUsername();
 
-    tcp::acceptor acceptor(service, end_point);
-    acceptor.accept(socket);
+      while (true) {
+        string message = controller.ReceiveMessage();
+        cout << message << endl;
+        controller.SendMessage(message);
+      }
 
-    string username;
-    do {
-      username = receive(socket);
-      send(socket, "CODE_OK");
-    } while (!UsernameIsUnique(username));
+      controller.CloseConnection();
 
-    while (true) {
-      string message = receive(socket);
-      cout << message << endl;
-      send(socket, message);
+    } catch (boost_error err) {
+      cerr << err.what() << endl;
     }
-
-  } catch (boost_error err) {
-    cerr << err.what() << endl;
   }
 
   return 0;
