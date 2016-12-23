@@ -142,6 +142,7 @@ void TextView::RunViewNewMessage() {
 
 void TextView::RunExit() {
   try {
+    controller_->SendMessage("EXIT");
     controller_->CloseConnection();
     cout << "Good bye!" << endl;
     exit(0);

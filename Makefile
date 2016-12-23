@@ -46,7 +46,7 @@ client_textview.o: $(DEPS_client_textview)
 # server
 SRC_SERVER=$(SRC)/server
 
-DEPS_TMP_server=server_main.o server_client_handler.o
+DEPS_TMP_server=server_main.o server_controller.o server_client_handler.o
 DEPS_server=$(patsubst %,$(OBJ)/%,$(DEPS_TMP_server))
 server: $(DEPS_TMP_server)
 	$(CC) $(CFLAGS) -o $(BIN)/$@ $(DEPS_server) -lboost_system -lboost_thread-mt
@@ -59,6 +59,15 @@ H_server_main=$(patsubst %,$(SRC_SERVER)/%,$(H_TMP_server_main))
 DEPS_server_main=$(patsubst %,$(SRC_SERVER)/%,$(DEPS_TMP_server_main))
 server_main.o: $(DEPS_server_main)
 	$(CC) $(CFLAGS) -c -o $(OBJ)/$@ $(CPP_server_main)
+
+CPP_TMP_server_controller=controller.cpp
+H_TMP_server_controller=controller.h
+DEPS_TMP_server_controller=$(CPP_TMP_server_controller) $(H_TMP_server_controller)
+CPP_server_controller=$(patsubst %,$(SRC_SERVER)/%,$(CPP_TMP_server_controller))
+H_server_controller=$(patsubst %,$(SRC_SERVER)/%,$(H_TMP_server_controller))
+DEPS_server_controller=$(patsubst %,$(SRC_SERVER)/%,$(DEPS_TMP_server_controller))
+server_controller.o: $(DEPS_server_controller)
+	$(CC) $(CFLAGS) -c -o $(OBJ)/$@ $(CPP_server_controller)
 
 CPP_TMP_server_client_handler=client_handler.cpp
 H_TMP_server_client_handler=client_handler.h
