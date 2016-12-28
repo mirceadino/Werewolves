@@ -15,10 +15,21 @@ namespace server {
 
 class Message {
   public:
+    typedef enum Type {
+      CONNECTION,
+      DISCONNECTION,
+      NARATIVE,
+      NORMAL,
+      WHISPER,
+      ADMIN
+    } Type;
+
     Message(const std::basic_string<char>& sender,
-            const std::basic_string<char>& message):
+            const std::basic_string<char>& message,
+            Type type):
       sender_(sender),
-      message_(message) {}
+      message_(message),
+      type_(type) {}
 
     const std::string& sender() const {
       return sender_;
@@ -28,9 +39,14 @@ class Message {
       return message_;
     }
 
+    const Type& type() const {
+      return type_;
+    }
+
   private:
     std::string sender_;
     std::string message_;
+    Type type_;
 };
 
 class Controller {

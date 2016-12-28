@@ -31,7 +31,6 @@ class TextView {
     int ChooseOption();
 
     void RunSendMessage();
-    void SendFullMessage(const std::basic_string<char>& message);
 
     void RunViewNewMessage();
 

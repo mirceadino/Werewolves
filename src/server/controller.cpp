@@ -58,7 +58,24 @@ void Controller::RemoveClient(ClientHandler* client_handler) {
 void Controller::ProcessMessage(const std::basic_string<char>& sender,
                                 const std::basic_string<char>& message) {
   mutex_.lock();
-  processing_queue_.push(Message(sender, message));
+
+  Message msg(sender, message, Message::NORMAL);
+
+  if (sender == "") {
+    msg = Message("", message, Message::ADMIN);
+  } else {
+    if (message == "/connect") {
+      msg = Message(sender, "", Message::CONNECTION);
+    } else if (message == "/disconnect") {
+      msg = Message(sender, "", Message::DISCONNECTION);
+    } else if (message.find("/me") == 0) {
+      msg = Message(sender, message.substr(3), Message::NARATIVE);
+    } else if (message.find("/whisper") == 0) {
+      msg = Message(sender, message.substr(8), Message::WHISPER);
+    }
+  }
+
+  processing_queue_.push(msg);
   mutex_.unlock();
 }
 
@@ -70,7 +87,38 @@ void Controller::Processer() {
       processing_queue_.pop();
       mutex_.unlock();
 
-      Broadcast(message.message());
+      switch (message.type()) {
+      case Message::CONNECTION: {
+        Broadcast(message.sender() + " connected.");
+        break;
+      }
+
+      case Message::DISCONNECTION: {
+        Broadcast(message.sender() + " disconnected.");
+        break;
+      }
+
+      case Message::NARATIVE: {
+        Broadcast(message.sender() + message.message());
+        break;
+      }
+
+      case Message::NORMAL: {
+        Broadcast(message.sender() + ": " + message.message());
+        break;
+      }
+
+      case Message::WHISPER: {
+        SendMessage(username_to_handler_[message.sender()],
+                    "You can\'t whisper yet.");
+        break;
+      }
+
+      case Message::ADMIN: {
+        Broadcast(message.message());
+        break;
+      }
+      }
     }
   }
 }
@@ -78,7 +126,7 @@ void Controller::Processer() {
 void Controller::Server(ClientHandler* client_handler) {
   client_handler->AskUsername();
   const string username = client_handler->username();
-  ProcessMessage("", username + " connected.");
+  ProcessMessage(username, "/connect");
 
   mutex_.lock();
   username_to_handler_[username] = client_handler;
@@ -90,11 +138,11 @@ void Controller::Server(ClientHandler* client_handler) {
                                          client_handler));
 
   receiver.join();
-  SendMessage(client_handler, "EXIT");
+  SendMessage(client_handler, "/exit");
   sender.join();
 
   client_handler->CloseConnection();
-  ProcessMessage("", username + " disconnected.");
+  ProcessMessage(username, "/disconnect");
 
   RemoveClient(client_handler);
 }
@@ -107,7 +155,7 @@ void Controller::Sender(ClientHandler* client_handler) {
       message_queues_[client_handler].pop();
       mutex_.unlock();
 
-      if (message == "EXIT") {
+      if (message == "/exit") {
         break;
       }
 
@@ -121,7 +169,7 @@ void Controller::Receiver(ClientHandler* client_handler) {
   while (true) {
     string message = client_handler->ReceiveMessage();
 
-    if (message == "EXIT") {
+    if (message == "/exit") {
       break;
     }
 

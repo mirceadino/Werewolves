@@ -119,11 +119,7 @@ void TextView::RunSendMessage() {
   getline(cin, message);
   boost::trim(username_);
 
-  SendFullMessage(message);
-}
-
-void TextView::SendFullMessage(const std::basic_string<char>& message) {
-  controller_->SendMessage(username_ + ": " + message);
+  controller_->SendMessage(message);
 }
 
 void TextView::RunViewNewMessage() {
@@ -142,7 +138,6 @@ void TextView::RunViewNewMessage() {
 
 void TextView::RunExit() {
   try {
-    controller_->SendMessage("EXIT");
     controller_->CloseConnection();
     cout << "Good bye!" << endl;
     exit(0);

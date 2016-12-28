@@ -58,6 +58,7 @@ vector<string> Controller::RetrieveNewMessages() {
 }
 
 void Controller::CloseConnection() {
+  SendMessage("/exit");
   socket_->close();
 }
 
