@@ -16,6 +16,10 @@ using std::endl;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
+Controller::Controller() {
+  boost::thread processer(boost::bind(Processer, this));
+}
+
 ClientHandler* Controller::AcceptNewClient(int port) {
   ClientHandler* handler = new ClientHandler();
   handler->AcceptConnection(port);
@@ -24,7 +28,7 @@ ClientHandler* Controller::AcceptNewClient(int port) {
 }
 
 void Controller::ServeClient(ClientHandler* client_handler) {
-  boost::thread server(boost::bind(Serve, this, client_handler));
+  boost::thread server(boost::bind(Server, this, client_handler));
 }
 
 void Controller::Broadcast(const basic_string<char>& message) {
@@ -51,10 +55,31 @@ void Controller::RemoveClient(ClientHandler* client_handler) {
   delete client_handler;
 }
 
-void Serve(Controller* controller, ClientHandler* client_handler) {
+void Controller::AddToProcessingQueue(const std::basic_string<char>& sender,
+                                      const std::basic_string<char>& message) {
+  mutex_.lock();
+  processing_queue_.push(Message(sender, message));
+  mutex_.unlock();
+}
+
+void Processer(Controller* controller) {
+  while (true) {
+
+    if (!controller->processing_queue_.empty()) {
+      controller->mutex_.lock();
+      const Message message = controller->processing_queue_.front();
+      controller->processing_queue_.pop();
+      controller->mutex_.unlock();
+
+      controller->Broadcast(message.message());
+    }
+  }
+}
+
+void Server(Controller* controller, ClientHandler* client_handler) {
   client_handler->AskUsername();
   const string username = client_handler->username();
-  controller->Broadcast(username + " connected.");
+  controller->AddToProcessingQueue("", username + " connected.");
 
   controller->mutex_.lock();
   controller->username_to_handler_[username] = client_handler;
@@ -70,7 +95,7 @@ void Serve(Controller* controller, ClientHandler* client_handler) {
   sender.join();
 
   client_handler->CloseConnection();
-  controller->Broadcast(username + " disconnected.");
+  controller->AddToProcessingQueue("", username + " disconnected.");
 
   controller->RemoveClient(client_handler);
 }
@@ -100,7 +125,7 @@ void Receiver(Controller* controller, ClientHandler* client_handler) {
     if (message == "EXIT") {
       break;
     }
-    controller->Broadcast(message);
+    controller->AddToProcessingQueue(client_handler->username(), message);
   }
 }
 
