@@ -48,14 +48,17 @@ class Controller {
 
     void RemoveClient(ClientHandler* client_handler);
 
-    void AddToProcessingQueue(const std::basic_string<char>& sender,
-                              const std::basic_string<char>& message);
+    void ProcessMessage(const std::basic_string<char>& sender,
+                        const std::basic_string<char>& message);
 
   private:
-    friend void Processer(Controller* controller);
-    friend void Server(Controller* controller, ClientHandler* client_handler);
-    friend void Sender(Controller* controller, ClientHandler* client_handler);
-    friend void Receiver(Controller* controller, ClientHandler* client_handler);
+    void Processer();
+
+    void Server(ClientHandler* client_handler);
+
+    void Sender(ClientHandler* client_handler);
+
+    void Receiver(ClientHandler* client_handler);
 
     std::unordered_set<ClientHandler* > client_handlers_;
     std::unordered_map<std::string, ClientHandler* > username_to_handler_;
@@ -63,11 +66,6 @@ class Controller {
     std::queue<Message> processing_queue_;
     boost::mutex mutex_;
 };
-
-void Processer(Controller* controller);
-void Server(Controller* controller, ClientHandler* client_handler);
-void Sender(Controller* controller, ClientHandler* client_handler);
-void Receiver(Controller* controller, ClientHandler* client_handler);
 
 }
 
